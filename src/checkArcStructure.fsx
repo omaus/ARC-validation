@@ -1,5 +1,43 @@
 open System.IO
 
+// Types:
+
+/// Type representation of a Study folder.
+type StudyFolderStructure = {
+    Name                : string
+    Path                : string
+    HasIsaFile          : bool
+    HasResourcesFolder  : bool
+    HasProtocolsFolder  : bool
+}
+
+/// Creates a StudyFolderStructure from given parameters.
+let createStudyFolderStructure name path hasIsaFile hasResourcesFolder hasProtocolsFolder = {
+    Name                = name
+    Path                = path
+    HasIsaFile          = hasIsaFile
+    HasResourcesFolder  = hasResourcesFolder
+    HasProtocolsFolder  = hasProtocolsFolder
+}
+
+/// Type representation of an Assay folder.
+type AssayFolderStructure = {
+    Name                : string
+    Path                : string
+    HasIsaFile          : bool
+    HasDatasetFolder    : bool
+    HasProtocolsFolder  : bool
+}
+
+/// Creates a StudyFolderStructure from given parameters.
+let createAssayFolderStructure name path hasIsaFile hasDatasetFolder hasProtocolsFolder = {
+    Name                = name
+    Path                = path
+    HasIsaFile          = hasIsaFile
+    HasDatasetFolder    = hasDatasetFolder
+    HasProtocolsFolder  = hasProtocolsFolder
+}
+
 /// Checks if `path` contains a .arc folder.
 let checkForArcFolder path = Directory.Exists (Path.Combine(path, ".arc"))
 
@@ -40,7 +78,7 @@ let checkForGitFolderStructure path =
 let checkForStudiesFolder path = Directory.Exists (Path.Combine(path, "studies"))
 
 /// Checks if `path` contains an Assays folder.
-let checkForAssayFolder path = Directory.Exists (Path.Combine(path, "assays"))
+let checkForAssaysFolder path = Directory.Exists (Path.Combine(path, "assays"))
 
 /// Checks if `path` contains a Runs folder.
 let checkForRunsFolder path = Directory.Exists (Path.Combine(path, "runs"))
@@ -50,5 +88,3 @@ let checkForWorkflowsFolder path = Directory.Exists (Path.Combine(path, "workflo
 
 /// Checks if `path` contains an Investigation file.
 let checkForInvestigationFile path = File.Exists (Path.Combine(path, "isa.investigation.xlsx"))
-
-let checkForAssayFiles path =
