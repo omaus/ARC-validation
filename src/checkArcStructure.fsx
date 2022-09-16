@@ -8,7 +8,6 @@ type StudyFolderStructure = {
     Path                : string
     HasIsaFile          : bool
     HasResourcesFolder  : bool
-    HasProtocolsFolder  : bool
 }
 
 /// Creates a StudyFolderStructure from given parameters.
@@ -17,7 +16,6 @@ let createStudyFolderStructure name path hasIsaFile hasResourcesFolder hasProtoc
     Path                = path
     HasIsaFile          = hasIsaFile
     HasResourcesFolder  = hasResourcesFolder
-    HasProtocolsFolder  = hasProtocolsFolder
 }
 
 /// Type representation of an Assay folder.
@@ -26,16 +24,14 @@ type AssayFolderStructure = {
     Path                : string
     HasIsaFile          : bool
     HasDatasetFolder    : bool
-    HasProtocolsFolder  : bool
 }
 
 /// Creates a StudyFolderStructure from given parameters.
-let createAssayFolderStructure name path hasIsaFile hasDatasetFolder hasProtocolsFolder = {
+let createAssayFolderStructure name path hasIsaFile hasDatasetFolder = {
     Name                = name
     Path                = path
     HasIsaFile          = hasIsaFile
     HasDatasetFolder    = hasDatasetFolder
-    HasProtocolsFolder  = hasProtocolsFolder
 }
 
 /// Checks if `path` contains a .arc folder.
@@ -88,3 +84,39 @@ let checkForWorkflowsFolder path = Directory.Exists (Path.Combine(path, "workflo
 
 /// Checks if `path` contains an Investigation file.
 let checkForInvestigationFile path = File.Exists (Path.Combine(path, "isa.investigation.xlsx"))
+
+/// Takes a possible Elements folder path (`string option`) and returns the possible collection of all Elements folders' paths in it. This applies to both Studies and Assays as Elements.
+let getElementInElementsFolder elementsFolder =
+    match elementsFolder with
+    | None -> None
+    | Some ef -> Directory.GetDirectories ef |> Some
+
+/// Takes a possible collection of Studies' paths (`string [] option`) and returns the possible folder structure of each Study.
+let checkStudiesFolderStructure studiesInStudiesFolder =
+    match studiesInStudiesFolder with
+    | None -> None
+    | Some studies ->
+        studies
+        |> Array.map (
+            fun dir ->
+                let n = (DirectoryInfo dir).Name
+                let isaf = Path.Combine(dir, "isa.study.xlsx") |> File.Exists
+                let rf = Path.Combine(dir, "resources") |> Directory.Exists
+                createStudyFolderStructure n dir isaf rf
+        )
+        |> Some
+
+/// Takes a possible collection of Assays' paths (`string [] option`) and returns the possible folder structure of each Assay.
+let checkAssaysFolderStructure assaysInAssaysFolder =
+    match assaysInAssaysFolder with
+    | None -> None
+    | Some assays ->
+        assays
+        |> Array.map (
+            fun dir ->
+                let n = (DirectoryInfo dir).Name
+                let isaf = Path.Combine(dir, "isa.assay.xlsx") |> File.Exists
+                let df = Path.Combine(dir, "dataset") |> Directory.Exists
+                createAssayFolderStructure n dir isaf df
+        )
+        |> Some

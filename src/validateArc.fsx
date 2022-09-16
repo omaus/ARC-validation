@@ -17,10 +17,6 @@ let pathToCheck = System.Environment.GetCommandLineArgs()[0]
 
 if Directory.Exists pathToCheck |> not then failwith "Input argument is no path to validate."
 
-let studiesFolder = Path.Combine(pathToCheck, "studies")
-
-let assaysFolder = Path.Combine(pathToCheck, "assays")
-
 
 // Evaluation (Checks):
 
@@ -32,49 +28,23 @@ let hasStudiesFolder = checkForStudiesFolder pathToCheck
 
 let hasAssaysFolder = checkForAssaysFolder pathToCheck
 
+let studiesFolder = if hasStudiesFolder then Path.Combine(pathToCheck, "studies") |> Some else None
+
+let assaysFolder = if hasAssaysFolder then Path.Combine(pathToCheck, "assays") |> Some else None
+
 let hasRunsFolder = checkForRunsFolder pathToCheck
 
 let hasWorkflowsFolder = checkForWorkflowsFolder pathToCheck
 
 let hasInvestigationFile = checkForInvestigationFile pathToCheck
 
-let studiesInStudiesFolder =
-    if hasStudiesFolder then Directory.GetDirectories studiesFolder |> Some
-    else None
+let studiesInStudiesFolder = getElementInElementsFolder studiesFolder
 
-let assaysInAssaysFolder =
-    if hasAssaysFolder then Directory.GetDirectories assaysFolder |> Some
-    else None
+let assaysInAssaysFolder = getElementInElementsFolder assaysFolder
 
-let studiesFolderStructure =
-    match studiesInStudiesFolder with
-    | None -> None
-    | Some studies ->
-        studies
-        |> Array.map (
-            fun dir ->
-                let n = (DirectoryInfo dir).Name
-                let isaf = Path.Combine(dir, "isa.assay.xlsx") |> File.Exists
-                let rf = Path.Combine(dir, "resources") |> Directory.Exists
-                let pf = Path.Combine(dir, "protocols") |> Directory.Exists
-                createStudyFolderStructure n dir isaf rf pf
-        )
-        |> Some
+let studiesFolderStructure = checkStudiesFolderStructure studiesInStudiesFolder
 
-let assaysFolderStructure =
-    match assaysInAssaysFolder with
-    | None -> None
-    | Some assays ->
-        assays
-        |> Array.map (
-            fun dir ->
-                let n = (DirectoryInfo dir).Name
-                let isaf = Path.Combine(dir, "isa.assay.xlsx") |> File.Exists
-                let df = Path.Combine(dir, "dataset") |> Directory.Exists
-                let pf = Path.Combine(dir, "protocols") |> Directory.Exists
-                createAssayFolderStructure n dir isaf df pf
-        )
-        |> Some
+let assaysFolderStructure = checkAssaysFolderStructure assaysInAssaysFolder
 
 
 // Validation (Tests):
