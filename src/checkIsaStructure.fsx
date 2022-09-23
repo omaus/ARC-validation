@@ -17,12 +17,9 @@ let areStudiesRegistered studiesPaths invesPath =
         | Some sps ->
             sps
             |> Array.map StudyFile.Study.fromFile
-    match studiesFromInves, studiesFromFiles.Length with
-    | None, 0 -> [||]
-    | None, n when n > 0 -> [||]
-    | Some sfis ->
-        sfis
-        |> Array.map (
-            fun sfi ->
-                if sfi
-        )
+    let setSfis =
+        match studiesFromInves with
+        | Some sfis -> set sfis     // TO DO: URGENT! Add comparison to types Study, Assay and (maybe) Investigation to support sets!
+        | None -> set []
+    let setSffs = set studiesFromFiles
+    setSffs
