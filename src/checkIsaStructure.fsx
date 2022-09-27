@@ -16,6 +16,27 @@ module Seq =
             if Seq.contains e largerSeq then e
     }
 
+    /// Computes the outersection (known as "symmetric difference" in mathematics) of two sequences.
+    let outersect1 (seq1 : seq<'T>) seq2 = seq {
+        //for e in seq1 do
+        //    if Seq.contains e seq2 |> not then e
+        //for e in seq2 do
+        //    if Seq.contains e seq1 |> not then e
+        let bothSeqs = seq {yield! seq1; yield! seq2} |> Seq.distinct
+        for e in bothSeqs do
+            if Seq.contains e seq1 && Seq.contains e seq2 |> not then e
+    }
+
+    let outersect2 (seq1 : seq<'T>) seq2 = seq {
+        //for e in seq1 do
+        //    if Seq.contains e seq2 |> not then e
+        //for e in seq2 do
+        //    if Seq.contains e seq1 |> not then e
+        let bothSeqs = seq {yield! seq1; yield! seq2}
+        for e in bothSeqs do
+            if Seq.contains e seq1 && Seq.contains e seq2 |> not then e
+    }
+
 module Array =
     /// Computes the intersection of two arrays.
     let intersect (arr1 : 'T []) (arr2 : 'T []) =
