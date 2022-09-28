@@ -17,24 +17,9 @@ module Seq =
     }
 
     /// Computes the outersection (known as "symmetric difference" in mathematics) of two sequences.
-    let outersect1 (seq1 : seq<'T>) seq2 = seq {
-        //for e in seq1 do
-        //    if Seq.contains e seq2 |> not then e
-        //for e in seq2 do
-        //    if Seq.contains e seq1 |> not then e
-        let bothSeqs = seq {yield! seq1; yield! seq2} |> Seq.distinct
-        for e in bothSeqs do
-            if Seq.contains e seq1 && Seq.contains e seq2 |> not then e
-    }
-
-    let outersect2 (seq1 : seq<'T>) seq2 = seq {
-        //for e in seq1 do
-        //    if Seq.contains e seq2 |> not then e
-        //for e in seq2 do
-        //    if Seq.contains e seq1 |> not then e
-        let bothSeqs = seq {yield! seq1; yield! seq2}
-        for e in bothSeqs do
-            if Seq.contains e seq1 && Seq.contains e seq2 |> not then e
+    let outersect (seq1 : seq<'T>) seq2 = seq {
+        for e in seq1 do if Seq.contains e seq2 |> not then e
+        for e in seq2 do if Seq.contains e seq1 |> not then e
     }
 
 module Array =
@@ -45,6 +30,12 @@ module Array =
             else arr1, arr2
         smallerArr
         |> Array.filter (fun e -> Array.contains e largerArr)
+
+    /// Computes the outersection (known as "symmetric difference" in mathematics) of two arrays.
+    let outersect (arr1 : 'T []) arr2 = [|
+        for e in arr1 do if Array.contains e arr2 |> not then e
+        for e in arr2 do if Array.contains e arr1 |> not then e
+    |]
 
 module List =
     /// Computes the intersection of two lists.
@@ -58,7 +49,11 @@ module List =
             | [] -> fl
         loop List.contains smallerList largerList []
 
-// TO DO: Add outersection functions to modules!
+    /// Computes the outersection (known as "symmetric difference" in mathematics) of two lists.
+    let outersect (list1 : 'T list) list2 = [
+        for e in list1 do if List.contains e list2 then e
+        for e in list2 do if List.contains e list1 then e
+    ]
 
 /// Checks if all existing Studies are registered in the Investigation file and if all registered Studies in the Investigation file are present in the ARC.
 let areStudiesRegistered studiesPaths invesPath =
