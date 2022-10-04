@@ -65,16 +65,14 @@ module List =
 /// Checks if all existing Studies are registered in the Investigation file and if all registered Studies in the Investigation file are present in the ARC.
 let areStudiesRegistered studiesPaths invesPath =
     let inves = Investigation.fromFile invesPath
-    let studiesFromInves = inves.Studies
+    let studiesFromInves = 
+        match inves.Studies with
+        | Some sfs -> sfs
+        | None -> []
     let studiesFromFiles = 
         match studiesPaths with
         | None -> [||]
         | Some sps ->
             sps
             |> Array.map StudyFile.Study.fromFile
-    let setSfis =
-        match studiesFromInves with
-        | Some sfis -> set sfis
-        | None -> set []
-    let setSffs = set studiesFromFiles
-    setSffs
+    if 
