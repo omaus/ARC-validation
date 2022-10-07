@@ -75,4 +75,5 @@ let areStudiesRegistered studiesPaths invesPath =
         | Some sps ->
             sps
             |> Array.map StudyFile.Study.fromFile
-    if 
+    let outersect = Seq.outersect studiesFromFiles studiesFromInves
+    if Seq.length outersect > 0 then 
