@@ -70,7 +70,7 @@ let checkStudiesRegistration studiesFromFiles inves =
         | None      -> []
     let studiesOutersect = List.outersect studiesFromInves studiesFromFiles
     {|
-        AreStudiesRegistered    = studiesOutersect.Length > 0
+        AreStudiesRegistered    = studiesOutersect.Length <= 0
         // studies that are present in the ARC filesystem but missing in the Investigation file
         UnregisteredStudies     = studiesOutersect |> List.filter (fun so -> List.contains so studiesFromFiles)
         // studies that are present in the Investigation file but missing in the ARC filesystem
@@ -93,7 +93,7 @@ let checkAssaysRegistration assaysFromPaths inves =
         )
     let assaysOutersect = List.outersect assaysFromStudies assaysFromPaths
     {|
-        AreAssaysRegistered = assaysOutersect.Length > 0
+        AreAssaysRegistered = assaysOutersect.Length <= 0
         UnregisteredAssays  = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromPaths)
         MissingAssays       = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromStudies)
     |}
