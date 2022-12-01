@@ -1,7 +1,6 @@
 #load "checkArcStructure.fsx"
 #load "checkIsaStructure.fsx"
 #r "nuget: Expecto"
-#r "nuget: ISADotNet.XLSX"
 
 open CheckArcStructure
 open CheckIsaStructure
@@ -10,7 +9,8 @@ open Expecto.Expect
 open ISADotNet.XLSX
 open System.IO
 
-let pathToCheck = System.Environment.GetCommandLineArgs()[0]
+let pathToCheck = System.Environment.GetCommandLineArgs() |> Array.last
+// let pathToCheck = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testARC26"
 
 if Directory.Exists pathToCheck |> not then failwith "Input argument is no path to validate."
 
@@ -28,11 +28,11 @@ let assaysInAssaysFolder    = getElementInElementsFolder assaysFolder
 let investigation = Investigation.fromFile (Path.Combine(pathToCheck, "isa.investigation.xlsx"))
 let studies =
     match studiesInStudiesFolder with
-    | Some ssfs -> ssfs |> Array.map StudyFile.Study.fromFile |> List.ofArray
+    | Some ssfs -> ssfs |> Array.map (fun ssf -> StudyFile.Study.fromFile (Path.Combine(ssf, "isa.study.xlsx"))) |> List.ofArray
     | None      -> []
 let assays =
     match assaysInAssaysFolder with
-    | Some aafs -> aafs |> Array.map (AssayFile.Assay.fromFile >> snd) |> List.ofArray
+    | Some aafs -> aafs |> Array.map (fun aaf -> AssayFile.Assay.fromFile (Path.Combine(aaf, "isa.assay.xlsx")) |> snd) |> List.ofArray
     | None      -> []
 
 let studyRegistration   = checkStudiesRegistration studies investigation
@@ -52,14 +52,54 @@ let fileStructureTests = testList "ARC filesystem structure tests" [
 
 let isaStructureTests = testList "ISA structure tests" [
     testList "ISA Study tests" [
-        testCase "All studies are registered"   <| fun () -> 
-            let missingStudiesNames = studyRegistration.MissingStudies |> List.map (fun s -> s.ID)
-            let protoMsg = sprintf "Not all studies are registered.\nStudies %s are missing in the study folder. Studies %s"
-            isTrue studyRegistration.AreStudiesRegistered "Not all st"
+        testCase "All studies are registered"   <| fun () -> isTrue studyRegistration.AreStudiesRegistered "Not all studies are registered"
     ]
     testList "ISA Assay tests" [
-        testCase "All assays are registered"    <| fun () -> isTrue
+        testCase "All assays are registered"    <| fun () -> isTrue assayRegistration.AreAssaysRegistered "Not all assays are registered"
     ]
 ]
 
-isTrue true ".arc folder does exist"
+let arcValidationTest = testList "ARC validation" [fileStructureTests; isaStructureTests]
+
+Tests.runTestsWithCLIArgs [] [|"--nunit-summary"; "TestResults.xml"|] arcValidationTest
+//Tests.runTestsWithCLIArgs [] [|"--junit-summary"; "TestResults.junit.xml"|] arcValidationTest
+
+#r "nuget: FsCheck"
+#r "nuget: Expecto.FsCheck"
+open FsCheck
+FsCheckConfig.defaultConfig
+let tp = Expecto.FsCheck.Property("lol", fun x -> x)    // könnte man sich überlegen, hier weiter herumzuspielen
+Tests.runTestsWithCLIArgs [||] [|"--nunit-summary"; "TestResultsTp.xml"|] tp
+
+
+Tests.defaultConfig.verbosity
+let tcb = Expecto.Tests.test "lol"
+let testtest = tcb.Run (fun () -> isTrue ("lal" = "lol") "not true")
+Tests.runTestsWithCLIArgs [||] [||] testtest
+
+let logger = Expecto.Logging.Log.create "myLogger"
+logger.
+
+
+//let studiesFromInves = 
+//    match investigation.Studies with
+//    | Some sfis -> sfis
+//    | None      -> []
+//let assaysFromStudies = 
+//    studiesFromInves
+//    |> List.collect (
+//        fun sfi -> 
+//            match sfi.Assays with
+//            | Some ass -> ass
+//            | None -> []
+//    )
+
+//let assaysOutersect = List.outersect assaysFromStudies assays
+
+//assayRegistration.AreAssaysRegistered
+//assayRegistration.MissingAssays
+//assayRegistration.UnregisteredAssays
+
+let studyFromFile = StudyFile.Study.fromFile @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testARC26\studies\sid1\isa.study.xlsx"
+let studyFromInvestigation = investigation.Studies.Value[0]
+studyFromFile.Protocols.Value
