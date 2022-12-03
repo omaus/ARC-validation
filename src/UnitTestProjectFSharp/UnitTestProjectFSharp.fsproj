@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="CheckArcStructure.fs" />
+    <Compile Include="CheckIsaStructure.fs" />
+    <Compile Include="ValidateArc.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
