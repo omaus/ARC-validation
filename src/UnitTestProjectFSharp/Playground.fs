@@ -1,4 +1,4 @@
-﻿namespace ARCValidation
+﻿module PlaygroundExpecto
 
 open ARCValidation
 open CheckArcStructure
@@ -9,7 +9,7 @@ open ISADotNet.XLSX
 open System.IO
 open NUnit
 
-module PlaygroundExpecto =
+module PGExpecto =
     
     let pathToCheck = System.Environment.GetCommandLineArgs() |> Array.last
     // let pathToCheck = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testARC26"
@@ -104,7 +104,7 @@ module PlaygroundExpecto =
     let studyFromInvestigation = investigation.Studies.Value[0]
     studyFromFile.Protocols.Value
 
-module PlaygroundNUnit =
+module PGNUnit =
 
     asd
     NUnit

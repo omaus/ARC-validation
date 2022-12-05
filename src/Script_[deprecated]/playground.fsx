@@ -78,7 +78,7 @@ let testtest = tcb.Run (fun () -> isTrue ("lal" = "lol") "not true")
 Tests.runTestsWithCLIArgs [||] [||] testtest
 
 let logger = Expecto.Logging.Log.create "myLogger"
-logger.
+//logger.
 
 
 //let studiesFromInves = 
@@ -103,3 +103,13 @@ logger.
 let studyFromFile = StudyFile.Study.fromFile @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testARC26\studies\sid1\isa.study.xlsx"
 let studyFromInvestigation = investigation.Studies.Value[0]
 studyFromFile.Protocols.Value
+
+#r "nuget: NUnit"
+
+open NUnit.Framework
+open System
+
+[<TextFixture>]
+type TestClass() =
+    [<Test>]
+    member this.Sheesh() = Assert.True true
