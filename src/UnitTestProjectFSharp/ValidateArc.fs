@@ -93,8 +93,8 @@ module ValidateArc =
         yield! (validateElementFolderStructure "Runs"       getRunsTestCases        runsFolderStructure         )
     ]
 
-    let isaStandardTests = testList "ISA standard tests" [
-        testCase 
-    ]
+    //let isaStandardTests = testList "ISA standard tests" [
+    //    testCase 
+    //]
 
     let testsCombined = testList "Tests combined" [fileStructureTests]

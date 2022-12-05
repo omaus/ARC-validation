@@ -9,6 +9,7 @@
     <Compile Include="CheckArcStructure.fs" />
     <Compile Include="CheckIsaStructure.fs" />
     <Compile Include="ValidateArc.fs" />
+    <None Include="Playground.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -17,6 +18,7 @@
     <PackageReference Include="FsSpreadsheet" Version="0.1.7" />
     <PackageReference Include="ISADotNet" Version="0.6.0" />
     <PackageReference Include="ISADotNet.XLSX" Version="0.6.0" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
   </ItemGroup>
 
 </Project>
