@@ -1,6 +1,4 @@
-#r "nuget: FsSpreadsheet"
-#r "nuget: ISADotNet"
-#r "nuget: ISADotNet.Xlsx"
+namespace ARCValidation
 
 open FsSpreadsheet
 open ISADotNet
@@ -62,45 +60,47 @@ module List =
         hsS1.SymmetricExceptWith list2
         List.ofSeq hsS1
 
-/// Checks if all existing Studies are registered in the Investigation file and if all registered Studies in the Investigation file are present in the ARC.
-let checkStudiesRegistration studiesFromFiles inves =
-    let studiesFromInves = 
-        match inves.Studies with
-        | Some sfis -> sfis
-        | None      -> []
-    let studiesOutersect = List.outersect studiesFromInves studiesFromFiles
-    {|
-        AreStudiesRegistered    = studiesOutersect.Length <= 0
-        // studies that are present in the ARC filesystem but missing in the Investigation file
-        UnregisteredStudies     = studiesOutersect |> List.filter (fun so -> List.contains so studiesFromFiles)
-        // studies that are present in the Investigation file but missing in the ARC filesystem
-        MissingStudies          = studiesOutersect |> List.filter (fun so -> List.contains so studiesFromInves)
-    |}
+module CheckIsaStructure =
 
-/// Checks if all existing Assays are registered in the Investigation file and if all registered Assays in the Investigation file are present in the ARC.
-let checkAssaysRegistration assaysFromPaths inves =
-    let studiesFromInves = 
-        match inves.Studies with
-        | Some sfis -> sfis
-        | None      -> []
-    let assaysFromStudies = 
-        studiesFromInves
-        |> List.collect (
-            fun sfi -> 
-                match sfi.Assays with
-                | Some ass -> ass
-                | None -> []
-        )
-    let assaysOutersect = List.outersect assaysFromStudies assaysFromPaths
-    {|
-        AreAssaysRegistered = assaysOutersect.Length <= 0
-        UnregisteredAssays  = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromPaths)
-        MissingAssays       = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromStudies)
-    |}
+    /// Checks if all existing Studies are registered in the Investigation file and if all registered Studies in the Investigation file are present in the ARC.
+    let checkStudiesRegistration studiesFromFiles inves =
+        let studiesFromInves = 
+            match inves.Studies with
+            | Some sfis -> sfis
+            | None      -> []
+        let studiesOutersect = List.outersect studiesFromInves studiesFromFiles
+        {|
+            AreStudiesRegistered    = studiesOutersect.Length <= 0
+            // studies that are present in the ARC filesystem but missing in the Investigation file
+            UnregisteredStudies     = studiesOutersect |> List.filter (fun so -> List.contains so studiesFromFiles)
+            // studies that are present in the Investigation file but missing in the ARC filesystem
+            MissingStudies          = studiesOutersect |> List.filter (fun so -> List.contains so studiesFromInves)
+        |}
 
-//let hasSwateTable assays
+    /// Checks if all existing Assays are registered in the Investigation file and if all registered Assays in the Investigation file are present in the ARC.
+    let checkAssaysRegistration assaysFromPaths inves =
+        let studiesFromInves = 
+            match inves.Studies with
+            | Some sfis -> sfis
+            | None      -> []
+        let assaysFromStudies = 
+            studiesFromInves
+            |> List.collect (
+                fun sfi -> 
+                    match sfi.Assays with
+                    | Some ass -> ass
+                    | None -> []
+            )
+        let assaysOutersect = List.outersect assaysFromStudies assaysFromPaths
+        {|
+            AreAssaysRegistered = assaysOutersect.Length <= 0
+            UnregisteredAssays  = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromPaths)
+            MissingAssays       = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromStudies)
+        |}
 
-//let checkRegisteredDatasetsFiles (assays : Assay list) =
-//    let paths = assays |> List.map (fun ass -> ass.FileName.Value)
-//    let assaysFromFiles = paths |> List.map (AssayFile.Assay.fromFile >> snd)
-//    let swateTables = assaysFromFiles |> List.map (fun aff -> aff.ProcessSequence)
+    //let hasSwateTable assays
+
+    //let checkRegisteredDatasetsFiles (assays : Assay list) =
+    //    let paths = assays |> List.map (fun ass -> ass.FileName.Value)
+    //    let assaysFromFiles = paths |> List.map (AssayFile.Assay.fromFile >> snd)
+    //    let swateTables = assaysFromFiles |> List.map (fun aff -> aff.ProcessSequence)
