@@ -3,6 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <CreateDesktopShortcut>false</CreateDesktopShortcut>
   </PropertyGroup>
 
   <ItemGroup>
