@@ -9,8 +9,21 @@ open Expecto.Expect
 open ISADotNet.XLSX
 open System.IO
 
-let pathToCheck = System.Environment.GetCommandLineArgs() |> Array.last
-// let pathToCheck = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testARC26"
+
+let isRegistered actual message =
+  if actual then ()
+  else
+    failtestf "%s. Actual value was not registered." message     // <- string hier ist expliziter Fehler (ohne Ort, Ort wird über message realisiert), also Fehlermeldung zum Name der Funktion
+
+// as path (tree) -> Arc Structure, (isa) content
+// let isParameterConsistent actual tree message =
+// isParameterConsistent myStudy.Parameters tree "hier wäre dann der Baum"
+// isParameterConsistent myAssay.Parameters tree "hier wäre dann der Baum"
+// message = genaue Position, geht aus dem Objekt hervor (dynamisch); 
+
+
+// let pathToCheck = System.Environment.GetCommandLineArgs() |> Array.last
+let pathToCheck = @"C:\Users\revil\OneDrive\CSB-Stuff\NFDI\testARC26"
 
 if Directory.Exists pathToCheck |> not then failwith "Input argument is no path to validate."
 
@@ -40,7 +53,7 @@ let assayRegistration   = checkAssaysRegistration assays investigation
 
 let fileStructureTests = testList "ARC filesystem structure tests" [
     testList "Folder structure tests" [
-        testCase "Has .arc folder"              <| fun () -> isTrue hasArcFolder            ".arc folder does not exist"
+        testCase "Has .arc folder"              <| fun () -> isRegistered hasArcFolder            ".arc folder does not exist"
         testCase "Has Git folder structure"     <| fun () -> isTrue hasGitFolderStructure   "Git folder structure does not exist"
         testCase "Has Studies folder"           <| fun () -> isTrue hasStudiesFolder        "Studies folder does not exist"
         testCase "Has Assays folder"            <| fun () -> isTrue hasAssaysFolder         "Assays folder does not exist"
@@ -50,12 +63,28 @@ let fileStructureTests = testList "ARC filesystem structure tests" [
     ]
 ]
 
-let isaStructureTests = testList "ISA structure tests" [
-    testList "ISA Study tests" [
-        testCase "All studies are registered"   <| fun () -> isTrue studyRegistration.AreStudiesRegistered "Not all studies are registered"
+// testCase "Study"   <| fun () -> isRegistered studyRegistration.AreStudiesRegistered $"Path: {studyRegistration.}, Worksheet: {z}, Cell: {y}"
+
+// Task für BioHackathon: 
+//      1. dann den Writer schreiben, 
+//      2. Für alle dieser testListen einen Case machen (also 1 für Schema etc.), 
+//      3. dann ein Bsp. XML File daraus generieren
+
+
+// rechte Seite: möglichst wenig Fälle: Am besten sowas wie: nur Pfad, Worksheet & Zelle
+// links: dann so ausgleichen, dass es zusammen mit rechter Seite + statische Funktionsmessage vollkommen Sinn ergibt
+
+let isaStructureTests = testList "ISA" [
+    testList "Schema" [     // kann man alles mit JSON Schema testen, auch ISA (ist das ISA-Format korrekt?)
     ]
-    testList "ISA Assay tests" [
-        testCase "All assays are registered"    <| fun () -> isTrue assayRegistration.AreAssaysRegistered "Not all assays are registered"
+    testList "Content" [    // sind die Content-Regeln eingehalten?
+        testCase "Study"   <| fun () -> isRegistered studyRegistration.AreStudiesRegistered $"ID: {studyRegistration.}, Worksheet: {z}, Cell: {y}"
+        testCase "Assay"    <| fun () -> isRegistered assayRegistration.AreAssaysRegistered "Not all assays are registered"
+    ]
+    testList "Semantic" [   // z. B. haben alle Terme Identifier? Ist es CWL-complient?
+    ]
+    testList "Plausibility" [  // z. B. gibt es überhaupt einen Faktor? Macht das ISA Objekt wissenschaftlich Sinn?
+        testCase "Replicate"     <| fun () -> isEqual x ""
     ]
 ]
 
@@ -68,7 +97,7 @@ Tests.runTestsWithCLIArgs [] [|"--nunit-summary"; "TestResults.xml"|] arcValidat
 #r "nuget: Expecto.FsCheck"
 open FsCheck
 FsCheckConfig.defaultConfig
-let tp = Expecto.FsCheck.Property("lol", fun x -> x)    // k�nnte man sich �berlegen, hier weiter herumzuspielen
+let tp = Expecto.FsCheck.Property("lol", fun x -> x)    // k�nnte man sich �berlegen, hier weiter herumzuspielen
 Tests.runTestsWithCLIArgs [||] [|"--nunit-summary"; "TestResultsTp.xml"|] tp
 
 
@@ -80,6 +109,13 @@ Tests.runTestsWithCLIArgs [||] [||] testtest
 let logger = Expecto.Logging.Log.create "myLogger"
 //logger.
 
+Expecto.Impl.evalTests Tests.defaultConfig arcValidationTest
+|> Async.RunSynchronously
+|> List.map (fun (ft,ts) -> ft.name)
+
+
+
+Expecto.Tests.runTestsWithCancel
 
 //let studiesFromInves = 
 //    match investigation.Studies with
