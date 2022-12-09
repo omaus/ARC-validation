@@ -163,7 +163,7 @@ module SummaryWriter =
 
     let private expectoVersion = 
         // Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()   // fails because of not having the .dll at hand
-        let userDir = Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath
+        let userDir = Environment.SpecialFolder.UserProfile |> Environment.GetFolderPath        // workaround which uses NuGet package version
         Directory.GetDirectories(Path.Combine(userDir, ".nuget", "packages", "expecto"))
         |> Array.last
         |> fun dir -> 
@@ -192,7 +192,10 @@ module SummaryWriter =
             |> Seq.sortByDescending (fun (_,test) -> test.result.order, test.duration.TotalSeconds)
             |> Seq.map (fun (flatTest, test) ->
                     
-                let fullnameString = flatTest.name |> List.reduce (fun s1 s2 -> s1 + ";" + s2)
+                let fullnameString = 
+                    flatTest.name 
+                    |> List.fold (fun acc s -> acc+ s + ";" ) "[ "
+                    |> fun s -> s[.. String.length s - 2] + " ]"
                 let element = XElement(XName.Get "test-case", XAttribute(XName.Get "name", fullnameString))
                 let addAttribute name (content : string) = element.Add(XAttribute(XName.Get name, content))
 
@@ -281,6 +284,7 @@ module SummaryWriter =
         |> XDocument
         |> xmlSave file
 
+
 let dummyTests = testList "node1/top" [
     testList "node2" [
         testList "node 3" [
@@ -309,6 +313,9 @@ let res =
             timedOut = []
         }
 
-let fp = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testFolder/testresult.xml"
+//let fp = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testFolder/testresult.xml"
+let fp = @"C:\Users\revil\OneDrive\CSB-Stuff\NFDI\testFolder/testresult.xml"
 
 SummaryWriter.writeNUnitSummary fp res
+
+// XSD format makes autogenerating Readers easy. XSD für NUnit XML v2: https://nunit.org/files/testresult_schema_25.txt
