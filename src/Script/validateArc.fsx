@@ -1,12 +1,16 @@
 #load "checkArcStructure.fsx"
-#load "checkIsaFiles.fsx"
+#load "checkIsaStructure.fsx"
+#load "summaryFileWriter.fsx"
 
 #r "nuget: Expecto"
 
 open CheckArcStructure
+open CheckIsaStructure
+open SummaryFileWriter
 
 open Expecto
-open Expecto.Expect
+open Expect
+open Impl
 
 open System.IO
 
@@ -16,6 +20,22 @@ open System.IO
 let pathToCheck = System.Environment.GetCommandLineArgs()[0]
 
 if Directory.Exists pathToCheck |> not then failwith "Input argument is no path to validate."
+
+/// Performs a Test and returns the resulting TestSummary.
+let performTest test =
+    let w = System.Diagnostics.Stopwatch()
+    w.Start()
+    evalTests Tests.defaultConfig test
+    |> Async.RunSynchronously
+    |> fun r -> 
+        w.Stop()
+        {
+            results = r
+            duration = w.Elapsed
+            maxMemory = 0L
+            memoryLimit = 0L
+            timedOut = []
+        }
 
 
 // Evaluation (Checks):
@@ -98,3 +118,4 @@ let isaStandardTests = testList "ISA standard tests" [
 ]
 
 let testsCombined = testList "Tests combined" [fileStructureTests]
+
