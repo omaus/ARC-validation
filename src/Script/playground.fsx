@@ -1,6 +1,7 @@
 #load "checkArcStructure.fsx"
 #load "checkIsaStructure.fsx"
 #load "summaryFileWriter.fsx"
+#load "evaluation.fsx"
 #r "nuget: Expecto"
 #r "nuget: FSharpAux"
 
@@ -12,12 +13,13 @@ open Expecto.Expect
 open ISADotNet.XLSX
 open System.IO
 open FSharpAux
+open Build
+open Build.Toplevel
+open Build.Sublevel1
+open Build.Sublevel2
+open Build.CaseLevel
+open Check
 
-
-let isRegistered actual message =
-  if actual then ()
-  else
-    failtestf "%s. Actual value was not registered." message     // <- string hier ist expliziter Fehler (ohne Ort, Ort wird über message realisiert), also Fehlermeldung zum Name der Funktion
 
 // as path (tree) -> Arc Structure, (isa) content
 // let isParameterConsistent actual tree message =
@@ -189,3 +191,37 @@ let fp = @"C:\Users\revil\OneDrive\CSB-Stuff\NFDI\testFolder/testresult.xml"
 writeNUnitSummary fp res
 
 // XSD format makes autogenerating Readers easy. XSD für NUnit XML v2: https://nunit.org/files/testresult_schema_25.txt
+
+
+
+
+
+
+let studyXlsx = {Path = "bla"; Cell = "A1"}
+let studySourceNameColumn = true
+let studySampleNameColumn = true
+let invesXlsx = {Path = "bla"; Cell = "B17"}
+let studyRegisteredInInves = true
+let studyFactor = true
+let assayXlsx = {Path = "bla"; Cell = "B2"}
+let termsAvailable = true
+
+isa [
+    schema [
+        Sublevel2.study [
+            sourceNameColumn (fun () -> isPresent studySourceNameColumn (XlsxFileMessage studyXlsx))
+            sampleNameColumn (fun () -> isPresent studySampleNameColumn (XlsxFileMessage studyXlsx))
+        ]
+        assay (fun () -> isRegistered studyRegisteredInInves (XlsxFileMessage invesXlsx))
+    ]
+    semantic [
+        Sublevel2.assay [
+            term (fun () -> isValidTerm termsAvailable (XlsxFileMessage assayXlsx))
+        ]
+    ]
+    plausibility [
+        Sublevel2.study [
+            factor (fun () -> isPresent studyFactor (XlsxFileMessage studyXlsx))
+        ]
+    ]
+]

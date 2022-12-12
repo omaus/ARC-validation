@@ -127,6 +127,8 @@ module Build =
         let metadata = testCase "Metadata"
         /// Builds an ISA Factor-related Test case.
         let factor = testCase "Factor"
+        /// Builds an ontology term-related Test case.
+        let term = testCase "Term"
 
 /// Functions for checking ARC- or ISA-specific properties.
 module Check =
@@ -179,11 +181,11 @@ module Check =
         else
             failtestf "Actual entity is not reproducible: %s" (parseMessage message)
 
-    /// Checks if an entity is an ontological term.
-    let isTerm actual message =
+    /// Checks if an entity is a valid ontological term.
+    let isValidTerm actual message =
         if actual then ()
         else
-            failtestf "Actual entity is no term: %s" (parseMessage message)
+            failtestf "Actual entity is not valid: %s" (parseMessage message)
 
 
 open Build
@@ -199,6 +201,7 @@ let studySampleNameColumn = true
 let invesXlsx = {Path = "bla"; Cell = "B17"}
 let studyRegisteredInInves = true
 let studyFactor = true
+let assayXlsx = {Path = "bla"; Cell = "B2"}
 let termsAvailable = true
 
 isa [
@@ -211,7 +214,7 @@ isa [
     ]
     semantic [
         Sublevel2.assay [
-            
+            term (fun () -> isValidTerm termsAvailable (XlsxFileMessage assayXlsx))
         ]
     ]
     plausibility [
