@@ -34,6 +34,11 @@ let private xmlSave fileName (doc : XDocument) =
     use writer = XmlWriter.Create(path, settings)
     doc.Save writer
 
+// delete when added to FSharpAux
+module String =
+    /// Returns a new string in which all leading and trailing occurrences of white-space characters from the current string are removed.
+    let trim (s : string) = s.Trim()
+
 // Slightly modified from https://github.com/haf/expecto/blob/main/Expecto/TestResults.fs
 /// Generate test results using NUnit v2 schema.
 let writeNUnitSummary file (summary : TestRunSummary) =
@@ -42,15 +47,17 @@ let writeNUnitSummary file (summary : TestRunSummary) =
     let totalTests = summary.errored @ summary.failed @ summary.ignored @ summary.passed
     let testCaseElements =
         totalTests
-        |> Seq.sortByDescending (fun (_,test) -> test.result.order, test.duration.TotalSeconds)
+        //|> Seq.sortByDescending (fun (_,test) -> test.result.order, test.duration.TotalSeconds)
         |> Seq.map (fun (flatTest, test) ->
                     
             let fullnameString = 
                 flatTest.name 
-                |> List.fold (fun acc s -> acc+ s + ";" ) "[ "
-                |> fun s -> s[.. String.length s - 2] + " ]"
+                |> List.fold (fun acc s -> acc + s + "; " ) "[ "
+                |> fun s -> s[.. String.length s - 3] + " ]"
             let element = XElement(XName.Get "test-case", XAttribute(XName.Get "name", fullnameString))
             let addAttribute name (content : string) = element.Add(XAttribute(XName.Get name, content))
+
+            printfn $"test.result.order is {test.result.order}\ntest.result.tag is {test.result.tag}"
 
             match test.result with
             | Ignored _ -> "False"
@@ -84,10 +91,16 @@ let writeNUnitSummary file (summary : TestRunSummary) =
             | Passed -> ()
             | Error e ->
                 failureNode.Add(XName.Get "message", XCData e.Message)
-                failureNode.Add(XName.Get "stack-trace", XCData e.StackTrace)
+                //failureNode.Add(XName.Get "stack-trace", XCData e.StackTrace)     // commented out to tackle unnecessary error stack trace in error message
                 element.Add failureNode
             | Failed msg ->
-                failureNode.Add(XName.Get "message", XCData msg)
+                // added to tackle unnecessary error stack trace in failure message
+                let eWithoutStackTrace =
+                    String.trim msg
+                    |> String.split '\n'
+                    |> Array.head
+                //failureNode.Add(XName.Get "message", XCData msg)
+                failureNode.Add(XName.Get "message", XCData eWithoutStackTrace)
                 element.Add failureNode
             | Ignored msg -> element.Add(XElement(XName.Get "reason", XElement(XName.Get "message", XCData msg)))
             element)
@@ -138,3 +151,5 @@ let writeNUnitSummary file (summary : TestRunSummary) =
     |> xmlSave file
 
 // TO DO: Adjust JUnit writer from haf/expecto
+
+// XSD format makes autogenerating Readers easy. XSD für NUnit XML v2: https://nunit.org/files/testresult_schema_25.txt

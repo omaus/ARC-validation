@@ -53,7 +53,10 @@ let parseMessage message =
     match message with
     | FileSystemEntityMessage   s   -> $"Path: {s}."
     | TextFileMessage           tfm -> $"Path: {tfm.Path}, Line: {tfm.Line}, Position: {tfm.Pos}."
-    | XlsxFileMessage           xfm -> $"Path: {xfm.Path}, Cell: {xfm.Cell}."
+    | XlsxFileMessage           xfm -> $"Path: {xfm.Path}, Cell: {xfm.Cell}."       // <--- realisieren über oben, weil Zelle = Line + Pos
+
+// rechte Seite: möglichst wenig Fälle: Am besten sowas wie: nur Pfad, Worksheet & Zelle bzw. Pfad, Line & Pos
+// links: dann so ausgleichen, dass es zusammen mit rechter Seite + statische Funktionsmessage vollkommen Sinn ergibt
 
 /// Functions for building ARC-specific Expecto-Unit Tests.
 module Build =
@@ -68,10 +71,13 @@ module Build =
     /// First sublevel for creating ARC-specific Test lists.
     module Sublevel1 =
         /// Builds an ISA Schema-related Test list.
-        let schema = testList "Schema"    // alt.: let content = testList "Content"
+        // kann man alles mit JSON Schema testen, auch ISA (ist das ISA-Format korrekt?); bei Bedarf mit Content fusionieren
+        let schema = testList "Schema"    // alt.: let content = testList "Content"     // sind die Content-Regeln eingehalten?
         /// Builds an ISA Semantic-related Test list.
+        // z. B. haben alle Terme Identifier? Ist es CWL-complient?
         let semantic = testList "Semantic"
         /// Builds an ISA Plausibility-related Test list.
+        // z. B. gibt es überhaupt einen Faktor? Macht das ISA Objekt wissenschaftlich Sinn?
         let plausibility = testList "Plausibility"
     
     /// Second sublevel for creating ARC-specific Test lists.
@@ -104,7 +110,7 @@ module Build =
         /// Builds an Test case regarding the ARC Runs folder.
         let runs = testCase "Runs"
         /// Builds an ISA Study file-related Test case.
-        let study = testCase "Study"
+        let study = testCase "Study"            // besser: let study = "Study" (oder statt string OntologyTerm Record)
         /// Builds an ISA Assay file-related Test case.
         let assay = testCase "Assay"
         /// Builds an ISA Investigation file-related Test case.
@@ -118,7 +124,8 @@ module Build =
         /// Builds a Test case regarding the Sample Name column or a column that has the same function, i.e., Raw Data File and Derived Data File.
         let sampleNameColumn = testCase "SampleNameColumn"
         /// Builds a Test case regarding the Source Name column.
-        let sourceNameColumn = testCase "SourceNameColumn"
+        let sourceNameColumn = testCase "SourceNameColumn"  // <--- ontology term von ISA dafür nutzen? wenn vorhanden, gucken in ISA specific.
+                                                            // ontologie anlegen mit termen von ISA bzw. eigenen Termen, sowohl hier als auch in den Verben
         /// Builds a Test case regarding the version of a CWL file.
         let cwlVersion = testCase "CWL version"
         /// Builds a Test case regarding the description of a Tool and/or a Workflow of a CWL file.
@@ -187,49 +194,20 @@ module Check =
         else
             failtestf "Actual entity is not valid: %s" (parseMessage message)
 
+open Impl
 
-open Build
-open Build.Toplevel
-open Build.Sublevel1
-open Build.Sublevel2
-open Build.CaseLevel
-open Check
-
-let studyXlsx = {Path = "bla"; Cell = "A1"}
-let studySourceNameColumn = true
-let studySampleNameColumn = true
-let invesXlsx = {Path = "bla"; Cell = "B17"}
-let studyRegisteredInInves = true
-let studyFactor = true
-let assayXlsx = {Path = "bla"; Cell = "B2"}
-let termsAvailable = true
-
-isa [
-    schema [
-        Sublevel2.study [
-            sourceNameColumn (fun () -> isPresent studySourceNameColumn (XlsxFileMessage studyXlsx))
-            sampleNameColumn (fun () -> isPresent studySampleNameColumn (XlsxFileMessage studyXlsx))
-        ]
-        assay (fun () -> isRegistered studyRegisteredInInves (XlsxFileMessage invesXlsx))
-    ]
-    semantic [
-        Sublevel2.assay [
-            term (fun () -> isValidTerm termsAvailable (XlsxFileMessage assayXlsx))
-        ]
-    ]
-    plausibility [
-        Sublevel2.study [
-            factor (fun () -> isPresent studyFactor (XlsxFileMessage studyXlsx))
-        ]
-    ]
-]
-
-let investigationPath = "bla"
-let investigationPresence = System.IO.File.Exists investigationPath
-let assaysPath = "bla"
-let assaysPresence = System.IO.File.Exists investigationPath
-
-filesystem [
-    investigation (fun () -> isPresent investigationPresence (FileSystemEntityMessage investigationPath))
-    assays (fun () -> isPresent assaysPresence (FileSystemEntityMessage assaysPath))
-]
+/// Performs a Test and returns the resulting TestSummary.
+let performTest test =
+    let w = System.Diagnostics.Stopwatch()
+    w.Start()
+    evalTests Tests.defaultConfig test
+    |> Async.RunSynchronously
+    |> fun r -> 
+        w.Stop()
+        {
+            results = r
+            duration = w.Elapsed
+            maxMemory = 0L
+            memoryLimit = 0L
+            timedOut = []
+        }
