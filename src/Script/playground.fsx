@@ -22,13 +22,13 @@ open Build.CaseLevel
 open Check
 
 
-let studyXlsx = {Path = "bla"; Cell = "A1"}
+let studyXlsx = {Path = @"C:\Users\Admin\testARC\studies\study1\study1.isa.xlsx"; Cell = "AC2"}
 let studySourceNameColumn = true
 let studySampleNameColumn = true
 let invesXlsx = {Path = "bla"; Cell = "B17"}
 let studyRegisteredInInves = true
 let studyFactor = true
-let assayXlsx = {Path = "bla"; Cell = "B2"}
+let assayXlsx = {Path = @"C:\Users\Admin\testARC\assays\assay1\assay1.isa.xlsx"; Cell = "B2"}
 let termsAvailable1 = true
 let termsAvailable2 = false
 
@@ -55,8 +55,9 @@ let isaTests =
     ]
 
 let res = performTest isaTests
-let fp = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testFolder/testresult.xml"
+let fp = Some @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testFolder/testresult.xml"
 writeNUnitSummary fp res
+writeNUnitSummary None res
 
 let investigationPath = "bla"
 let investigationPresence = System.IO.File.Exists investigationPath

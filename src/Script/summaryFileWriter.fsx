@@ -41,7 +41,7 @@ module String =
 
 // Slightly modified from https://github.com/haf/expecto/blob/main/Expecto/TestResults.fs
 /// Generate test results using NUnit v2 schema.
-let writeNUnitSummary file (summary : TestRunSummary) =
+let writeNUnitSummary (file : string option) (summary : TestRunSummary) =
     // v3: https://github.com/nunit/docs/wiki/Test-Result-XML-Format
     // this impl is v2: http://nunit.org/docs/files/TestResult.xml
     let totalTests = summary.errored @ summary.failed @ summary.ignored @ summary.passed
@@ -57,7 +57,7 @@ let writeNUnitSummary file (summary : TestRunSummary) =
             let element = XElement(XName.Get "test-case", XAttribute(XName.Get "name", fullnameString))
             let addAttribute name (content : string) = element.Add(XAttribute(XName.Get name, content))
 
-            printfn $"test.result.order is {test.result.order}\ntest.result.tag is {test.result.tag}"
+            //printfn $"test.result.order is {test.result.order}\ntest.result.tag is {test.result.tag}"
 
             match test.result with
             | Ignored _ -> "False"
@@ -146,9 +146,14 @@ let writeNUnitSummary file (summary : TestRunSummary) =
                 XElement(XName.Get "results", testCaseElements)
             )
         )
-    element
-    |> XDocument
-    |> xmlSave file
+    
+    let xDoc = XDocument element
+
+    match file with
+    | Some path -> xmlSave path xDoc
+    | None      -> ()
+
+    xDoc.ToString()
 
 // TO DO: Adjust JUnit writer from haf/expecto
 

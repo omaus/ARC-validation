@@ -98,6 +98,23 @@ let checkAssaysRegistration assaysFromPaths inves =
         MissingAssays       = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromStudies)
     |}
 
+
+(* ISA MUSTs: 
+    - all Studies/Assays registered
+    - CWLs MUST be v1.2+
+    - Assay: metadata section (worksheet) MUST be present
+    - Study: metadata section (worksheet) MUST be present (only the 5 definite Study metadata headers)
+    - Swate tables: `Source Name` column MUST be present, `Sample Name`/`Raw Data File`/`Derived Data File` too
+    - CWLs MUST either contain tool description or workflow description
+    - if Workflows are present, there MUST be parallel Run files accordingly
+MAYs: (publishability)
+    - MUST contain an Assay or Workflow
+    - Investigation sections MUST be filled: Identifier, Title, Description, Contacts
+    - MUST be reproducible (i.e. Run data MUST be reproducible)
+*)
+
+
+
 //let hasSwateTable assays
 
 //let checkRegisteredDatasetsFiles (assays : Assay list) =
