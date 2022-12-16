@@ -1,5 +1,5 @@
 #r "nuget: FsSpreadsheet"
-#r "nuget: ISADotNet"
+#r "nuget: ISADotNet, 0.7.0-preview.2"
 #r "nuget: ISADotNet.Xlsx"
 
 open FsSpreadsheet
@@ -126,6 +126,10 @@ module Assay =
 
     /// Checks if an existing Assay has a metadata section present.
     let isMetadataSectionPresent assayPaths = checkForMetadataSection assayPaths "Assay"
+
+module JSONSchemaValidation =
+
+    
 
 
 (* ISA MUSTs: 
