@@ -1,10 +1,12 @@
 #r "nuget: FsSpreadsheet"
 #r "nuget: ISADotNet, 0.7.0-preview.2"
+#r "nuget: ISADotNet.Validation"
 #r "nuget: ISADotNet.Xlsx"
 
 open FsSpreadsheet
 open FsSpreadsheet.ExcelIO
 open ISADotNet
+open ISADotNet.Validation
 open ISADotNet.XLSX
 
 open System.Collections.Generic
@@ -129,7 +131,7 @@ module Assay =
 
 module JSONSchemaValidation =
 
-    
+    let validateAssay = JSchema.validate 
 
 
 (* ISA MUSTs: 
