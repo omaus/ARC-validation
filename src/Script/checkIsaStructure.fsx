@@ -3,6 +3,7 @@
 #r "nuget: ISADotNet.Xlsx"
 
 open FsSpreadsheet
+open FsSpreadsheet.ExcelIO
 open ISADotNet
 open ISADotNet.XLSX
 
@@ -62,41 +63,69 @@ module List =
         hsS1.SymmetricExceptWith list2
         List.ofSeq hsS1
 
-/// Checks if all existing Studies are registered in the Investigation file and if all registered Studies in the Investigation file are present in the ARC.
-let checkStudiesRegistration studiesFromFiles inves =
-    let studiesFromInves = 
-        match inves.Studies with
-        | Some sfis -> sfis
-        | None      -> []
-    let studiesOutersect = List.outersect studiesFromInves studiesFromFiles
-    {|
-        AreStudiesRegistered    = studiesOutersect.Length <= 0
-        // studies that are present in the ARC filesystem but missing in the Investigation file
-        UnregisteredStudies     = studiesOutersect |> List.filter (fun so -> List.contains so studiesFromFiles)
-        // studies that are present in the Investigation file but missing in the ARC filesystem
-        MissingStudies          = studiesOutersect |> List.filter (fun so -> List.contains so studiesFromInves)
-    |}
+/// Checks for the existence of a metadata section of a given kind of ISA structure in an XLSX file.
+let private checkForMetadataSection xlsxPath kind =
+    Spreadsheet.fromFile xlsxPath false
+    |> Spreadsheet.tryGetSheetBySheetName kind
+    |> fun s -> s.IsSome
 
-/// Checks if all existing Assays are registered in the Investigation file and if all registered Assays in the Investigation file are present in the ARC.
-let checkAssaysRegistration assaysFromPaths inves =
-    let studiesFromInves = 
-        match inves.Studies with
-        | Some sfis -> sfis
-        | None      -> []
-    let assaysFromStudies = 
-        studiesFromInves
-        |> List.collect (
-            fun sfi -> 
-                match sfi.Assays with
-                | Some ass -> ass
-                | None -> []
-        )
-    let assaysOutersect = List.outersect assaysFromStudies assaysFromPaths
-    {|
-        AreAssaysRegistered = assaysOutersect.Length <= 0
-        UnregisteredAssays  = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromPaths)
-        MissingAssays       = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromStudies)
-    |}
+/// Checks for the whole metadata of a given kind of ISA structure in an XLSX file.
+let private checkForMetadata xlsxPath kindFunction =
+    try kindFunction xlsxPath |> Some
+    with _ -> None
+
+/// Functions for checking the ISA structure of Studies.
+module Study =
+
+    /// Checks if all existing Studies are registered in the Investigation file and if all registered Studies in the Investigation file are present in the ARC.
+    let checkStudiesRegistration studiesFromFiles inves =
+        let studiesFromInves = 
+            match inves.Studies with
+            | Some sfis -> sfis
+            | None      -> []
+        let studiesOutersect = List.outersect studiesFromInves studiesFromFiles
+        {|
+            AreStudiesRegistered    = studiesOutersect.Length <= 0
+            // studies that are present in the ARC filesystem but missing in the Investigation file
+            UnregisteredStudies     = studiesOutersect |> List.filter (fun so -> List.contains so studiesFromFiles)
+            // studies that are present in the Investigation file but missing in the ARC filesystem
+            MissingStudies          = studiesOutersect |> List.filter (fun so -> List.contains so studiesFromInves)
+        |}
+
+    /// Checks if an existing Studiy has a metadata section present.
+    let isMetadataSectionPresent studyPath = checkForMetadataSection studyPath "Study"
+
+    /// 
+    let isMetadataPresent studyPath =
+        try StudyFile.Study.fromFile studyPath |> Some
+        with _ -> None
+
+/// Functions for checking the ISA structure of Assays.
+module Assay =
+
+    /// Checks if all existing Assays are registered in the Investigation file and if all registered Assays in the Investigation file are present in the ARC.
+    let checkAssaysRegistration assaysFromPaths inves =
+        let studiesFromInves = 
+            match inves.Studies with
+            | Some sfis -> sfis
+            | None      -> []
+        let assaysFromStudies = 
+            studiesFromInves
+            |> List.collect (
+                fun sfi -> 
+                    match sfi.Assays with
+                    | Some ass -> ass
+                    | None -> []
+            )
+        let assaysOutersect = List.outersect assaysFromStudies assaysFromPaths
+        {|
+            AreAssaysRegistered = assaysOutersect.Length <= 0
+            UnregisteredAssays  = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromPaths)
+            MissingAssays       = assaysOutersect |> List.filter (fun ao -> List.contains ao assaysFromStudies)
+        |}
+
+    /// Checks if an existing Assay has a metadata section present.
+    let isMetadataSectionPresent assayPaths = checkForMetadataSection assayPaths "Assay"
 
 
 (* ISA MUSTs: 
@@ -112,8 +141,6 @@ MAYs: (publishability)
     - Investigation sections MUST be filled: Identifier, Title, Description, Contacts
     - MUST be reproducible (i.e. Run data MUST be reproducible)
 *)
-
-
 
 //let hasSwateTable assays
 
