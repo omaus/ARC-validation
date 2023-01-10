@@ -91,7 +91,7 @@ let testInvesJson = Json.Investigation.toString testInves
 JSchema.validateInvestigation testInvesJson
 
 // Tests:
-// - Missing StudyIdentifier despite other Study information is simply ignored wtf
+// - Missing StudyIdentifier despite other Study information is simply ignored and returns Okay validation wtf
 
 let testStudyPath = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testARC26\studies\sid1\isa.study.xlsx"
 let testStudy = StudyFile.Study.fromFile testStudyPath
