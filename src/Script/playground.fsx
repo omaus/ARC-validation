@@ -68,3 +68,33 @@ filesystem [
     CaseLevel.investigation (fun () -> isPresent investigationPresence (FileSystemEntityMessage investigationPath))
     CaseLevel.assays (fun () -> isPresent assaysPresence (FileSystemEntityMessage assaysPath))
 ]
+
+#r "nuget: ISADotNet"
+#r "nuget: ISADotNet.XLSX"
+#r "nuget: ISADotNet.Validation"
+
+open ISADotNet
+open ISADotNet.XLSX
+open ISADotNet.Validation
+
+let testAssayPath = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testARC26\assays\aid1\isa.assay.xlsx"
+let _, testAssay = AssayFile.Assay.fromFile testAssayPath
+let testAssayJson = Json.Assay.toString testAssay
+
+JSchema.validateAssay testAssayJson
+JSchema.validateFactor testAssayJson
+
+let testInvesPath = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testARC26\isa.investigation.xlsx"
+let testInves = Investigation.fromFile testInvesPath
+let testInvesJson = Json.Investigation.toString testInves
+
+JSchema.validateInvestigation testInvesJson
+
+// Tests:
+// - Missing StudyIdentifier despite other Study information is simply ignored wtf
+
+let testStudyPath = @"C:\Users\olive\OneDrive\CSB-Stuff\NFDI\testARC26\studies\sid1\isa.study.xlsx"
+let testStudy = StudyFile.Study.fromFile testStudyPath
+let testStudyJson = Json.Study.toString testStudy
+
+JSchema.validateStudy testStudyJson
