@@ -140,7 +140,8 @@ module Build =
 /// Functions for checking ARC- or ISA-specific properties.
 module Check =
 
-    (* ISA MUSTs: 
+    (* 
+    ISA MUSTs: 
         - all Studies/Assays registered
         - CWLs MUST be v1.2+
         - Assay: metadata section (worksheet) MUST be present

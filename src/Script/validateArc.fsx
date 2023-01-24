@@ -86,8 +86,8 @@ let getStudyTestCases (s : StudyFolderStructure) = [
 ]
 /// Takes an Assay folder structure and returns a list of TestCases based on it.
 let getAssayTestCases (a : AssayFolderStructure) = [
-    testCase $"Assay {a.Name} has ISA assay file"   <| fun () -> isTrue a.HasIsaFile          "ISA Assay file does exist"
-    testCase $"Assay {a.Name} has Dataset folder"   <| fun () -> isTrue a.HasDatasetFolder    "Dataset folder does exist"
+    testCase $"Assay {a.Name} has ISA assay file"   <| fun () -> isTrue a.HasIsaFile        "ISA Assay file does exist"
+    testCase $"Assay {a.Name} has Dataset folder"   <| fun () -> isTrue a.HasDatasetFolder  "Dataset folder does exist"
 ]
 /// Takes a Workflow folder structure and returns a list of TestCases based on it.
 let getWorkflowTestCases (w : WorkflowFolderStructure) = [
