@@ -42,13 +42,11 @@ let webApp =
             route "/ping" >=> numberHandler
         ]
         subRoute "/v1" (
-            subRoute "/checkResult" (
+            subRoute "/testResult" (
                 choose [
                     GET >=> route "/docs" >=> htmlView ValidationResultApi.Docs.view
                     POST >=> choose [
-                        route "/get" >=> ValidationResultApiHandler.isaJsonToARCHandler
-                        route "/init" >=> ValidationResultApiHandler.arcInitHandler
-                        route "/import" >=> ValidationResultApiHandler.arcImportHandler
+                        route "/check" >=> ValidationResultApi.Handler.checkResult
                     ]
                 ]
             )
