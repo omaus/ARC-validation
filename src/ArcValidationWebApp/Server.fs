@@ -32,7 +32,7 @@ let versionHandler : HttpHandler =
 
 /// Endpoints
 let webApp =
-    // TO DO: establish versioning for APIs: e.g. `localhost/api/v1/ping`, "v1" should be the ArcCommander's version
+    // TO DO: establish versioning for APIs: e.g. `localhost/api/v1/ping`, "v1" should be the WebApp's version
     choose [
         GET >=> choose [
             route "/version" >=> versionHandler
@@ -42,13 +42,13 @@ let webApp =
             route "/ping" >=> numberHandler
         ]
         subRoute "/v1" (
-            subRoute "/arc" (
+            subRoute "/checkResult" (
                 choose [
-                    GET >=> route "/docs" >=> htmlView ArcApi.Docs.view
+                    GET >=> route "/docs" >=> htmlView ValidationResultApi.Docs.view
                     POST >=> choose [
-                        route "/get" >=> ArcAPIHandler.isaJsonToARCHandler
-                        route "/init" >=> ArcAPIHandler.arcInitHandler
-                        route "/import" >=> ArcAPIHandler.arcImportHandler
+                        route "/get" >=> ValidationResultApiHandler.isaJsonToARCHandler
+                        route "/init" >=> ValidationResultApiHandler.arcInitHandler
+                        route "/import" >=> ValidationResultApiHandler.arcImportHandler
                     ]
                 ]
             )
@@ -82,11 +82,9 @@ let configureServices (services : IServiceCollection) =
     services.AddCors(fun options -> options.AddPolicy(corsPolicyName, corsPolicyConfig)) |> ignore
     services.AddGiraffe() |> ignore
 
-let start arcConfiguration (arcServerArgs : Map<string,Argument>) =
+let start port =
 
-    let port = 
-        tryGetFieldValueByName "Port" arcServerArgs
-        |> Option.defaultValue "5000"
+    let endPort = Option.defaultValue "5000" port
 
     // https://trustbit.tech/blog/2021/03/12/introduction-to-web-programming-in-f-sharp-with-giraffe-part-3
     // This only works because we added webroot folder to be included in .fsproj
