@@ -27,11 +27,14 @@ type Message = {
     Position    : string
 }
 
+let createMessage path line pos = {Path = path; Line = line; Position = pos}
+
 /// Checks if a given entity is present.
 // use this for checking for files, folders, and ISA-related stuff, e.g. if all Source/Sample Names are given etc.
 let isPresent actual message = 
     if actual then ()
     else failtestf "Actual entity is not present: %s" message.Path     // <- string hier ist expliziter Fehler (ohne Ort, Ort wird über message realisiert), also Fehlermeldung zum Name der Funktion
+    // right now missing here: incorporation of line and position
 
 /// Checks if a given ISA value is registered in the ISA Investigation file.
 let isRegistered actual message =
@@ -132,12 +135,8 @@ let createRunFolderStructure name path hasRunFile hasOutputFiles = {
     HasOutputFiles      = hasOutputFiles
 }
 
-/// Checks if `path` contains a .arc folder.
-let checkForArcFolder path = Directory.Exists (Path.Combine(path, ".arc"))
-
 /// Checks if `path` contains a .git folder and all of its basic files.
-let checkForGitFolderStructure path =
-    let gitPath = Path.Combine(path, ".git")
+let checkForGitFolderStructure gitPath =
     let hooksPath = Path.Combine(gitPath, "hooks")
     let objectsPath = Path.Combine(gitPath, "objects")
     let refsPath = Path.Combine(gitPath, "refs")
@@ -167,21 +166,6 @@ let checkForGitFolderStructure path =
     Directory.Exists refsPath                                           &&
     Directory.Exists (Path.Combine(refsPath, "heads"))                  &&
     Directory.Exists (Path.Combine(refsPath, "tags"))
-
-/// Checks if `path` contains a Studies folder.
-let checkForStudiesFolder path = Directory.Exists (Path.Combine(path, "studies"))
-
-/// Checks if `path` contains an Assays folder.
-let checkForAssaysFolder path = Directory.Exists (Path.Combine(path, "assays"))
-
-/// Checks if `path` contains a Runs folder.
-let checkForRunsFolder path = Directory.Exists (Path.Combine(path, "runs"))
-
-/// Checks if `path` contains a Workflows folder.
-let checkForWorkflowsFolder path = Directory.Exists (Path.Combine(path, "workflows"))
-
-/// Checks if `path` contains an Investigation file.
-let checkForInvestigationFile path = File.Exists (Path.Combine(path, "isa.investigation.xlsx"))
 
 /// Takes a possible Elements folder path (`string option`) and returns the possible collection of all Elements folders' paths in it. This applies to Studies, Assays, Workflows, and Runs as Elements.
 let getElementInElementsFolder elementsFolder =
@@ -241,24 +225,33 @@ let checkRunsFolderStructure runsInRunsFolder =
 // Execution:
 
 let inputPath = 
+    // this is the path to the ARC
     try System.Environment.GetCommandLineArgs()[0]
     with :? System.IndexOutOfRangeException -> failwith "No or inproper path given."
 
-let hasArcFolder            = checkForArcFolder             inputPath
-let hasGitFolder            = checkForGitFolderStructure    inputPath
-let hasStudiesFolder        = checkForStudiesFolder         inputPath
-let hasAssaysFolder         = checkForAssaysFolder          inputPath
-let hasRunsFolder           = checkForRunsFolder            inputPath
-let hasWorkflowsFolder      = checkForWorkflowsFolder       inputPath
-let hasInvestigationFile    = checkForInvestigationFile     inputPath
+let arcFolderPath       = Path.Combine(inputPath, ".arc")
+let gitFolderPath       = Path.Combine(inputPath, ".git")
+let studiesPath         = Path.Combine(inputPath, "studies")
+let assaysPath          = Path.Combine(inputPath, "assays")
+let runsPath            = Path.Combine(inputPath, "runs")
+let workflowsPath       = Path.Combine(inputPath, "workflows")
+let investigationPath   = Path.Combine(inputPath, "isa.investigation.xlsx")
+
+let hasArcFolder            = Directory.Exists arcFolderPath
+let hasGitFolderStructure   = checkForGitFolderStructure gitFolderPath
+let hasStudiesFolder        = Directory.Exists studiesPath
+let hasAssaysFolder         = Directory.Exists assaysPath
+let hasRunsFolder           = Directory.Exists runsPath
+let hasWorkflowsFolder      = Directory.Exists workflowsPath
+let hasInvestigationFile    = File.Exists investigationPath
 let studiesFolderStructure  = 
     if hasStudiesFolder then getElementInElementsFolder 
 
 
 let filesystem =
     testList "Filesystem" [
-        testCase ".arc" <| fun () ->
-            
+        testCase ".arc" <| fun () -> isPresent hasArcFolder (createMessage arcFolderPath "" "")
+        testCase ".git" <| fun () -> isPresent hasGitFolder (createMessage arcFolderPath "" "")
     ]
 
 let isaTests =
