@@ -226,7 +226,7 @@ let checkRunsFolderStructure runsInRunsFolder =
 
 let inputPath = 
     // this is the path to the ARC
-    try System.Environment.GetCommandLineArgs()[0]
+    try System.Environment.GetCommandLineArgs()[1]
     with :? System.IndexOutOfRangeException -> failwith "No or inproper path given."
 
 let arcFolderPath       = Path.Combine(inputPath, ".arc")
