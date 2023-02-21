@@ -137,6 +137,7 @@ let createRunFolderStructure name path hasRunFile hasOutputFiles = {
 
 /// Checks if `path` contains a .git folder and all of its basic files.
 let checkForGitFolderStructure gitPath =
+    // to do: Single stuff has to be checked instead of WHOLE git folder. Git folder itself becomes a testList
     let hooksPath = Path.Combine(gitPath, "hooks")
     let objectsPath = Path.Combine(gitPath, "objects")
     let refsPath = Path.Combine(gitPath, "refs")
@@ -251,7 +252,9 @@ let studiesFolderStructure  =
 let filesystem =
     testList "Filesystem" [
         testCase ".arc" <| fun () -> isPresent hasArcFolder (createMessage arcFolderPath "" "")
-        testCase ".git" <| fun () -> isPresent hasGitFolder (createMessage arcFolderPath "" "")
+        testList ".git" [
+            testCase ""
+        ]
     ]
 
 let isaTests =
