@@ -23,8 +23,8 @@ let private parseCwlVer cwlVer =
 
 type Message = {
     Path        : string
-    Line        : string
-    Position    : string
+    Line        : string option
+    Position    : string option
 }
 
 let createMessage path line pos = {Path = path; Line = line; Position = pos}
@@ -142,6 +142,7 @@ let checkForGitFolderStructure gitPath =
     let objectsPath = Path.Combine(gitPath, "objects")
     let refsPath = Path.Combine(gitPath, "refs")
     Directory.Exists gitPath                                            &&
+    // done here
     File.Exists (Path.Combine(gitPath, "config"))                       &&
     File.Exists (Path.Combine(gitPath, "description"))                  &&
     File.Exists (Path.Combine(gitPath, "HEAD"))                         &&
@@ -230,8 +231,37 @@ let inputPath =
     try System.Environment.GetCommandLineArgs()[0]
     with :? System.IndexOutOfRangeException -> failwith "No or inproper path given."
 
+    //File.Exists (Path.Combine(gitPath, "description"))                  &&
+    //File.Exists (Path.Combine(gitPath, "HEAD"))                         &&
+    //Directory.Exists hooksPath                                          &&
+    //File.Exists (Path.Combine(hooksPath, "applypatch-msg.sample"))      &&
+    //File.Exists (Path.Combine(hooksPath, "commit-msg.sample"))          &&
+    //File.Exists (Path.Combine(hooksPath, "fsmonitor-watchman.sample"))  &&
+    //File.Exists (Path.Combine(hooksPath, "post-update.sample"))         &&
+    //File.Exists (Path.Combine(hooksPath, "pre-applypatch.sample"))      &&
+    //File.Exists (Path.Combine(hooksPath, "pre-commit.sample"))          &&
+    //File.Exists (Path.Combine(hooksPath, "pre-merge-commit.sample"))    &&
+    //File.Exists (Path.Combine(hooksPath, "pre-push.sample"))            &&
+    //File.Exists (Path.Combine(hooksPath, "pre-rebase.sample"))          &&
+    //File.Exists (Path.Combine(hooksPath, "pre-receive.sample"))         &&
+    //File.Exists (Path.Combine(hooksPath, "prepare-commit-msg.sample"))  &&
+    //File.Exists (Path.Combine(hooksPath, "push-to-checkout.sample"))    &&
+    //File.Exists (Path.Combine(hooksPath, "update.sample"))              &&
+    //Directory.Exists (Path.Combine(gitPath, "info"))                    &&
+    //File.Exists (Path.Combine(gitPath, "info", "exclude"))              &&
+    //Directory.Exists objectsPath                                        &&
+    //Directory.Exists (Path.Combine(objectsPath, "info"))                &&
+    //Directory.Exists (Path.Combine(objectsPath, "pack"))                &&
+    //Directory.Exists refsPath                                           &&
+    //Directory.Exists (Path.Combine(refsPath, "heads"))                  &&
+    //Directory.Exists (Path.Combine(refsPath, "tags"))
+
 let arcFolderPath       = Path.Combine(inputPath, ".arc")
 let gitFolderPath       = Path.Combine(inputPath, ".git")
+let hooksPath           = Path.Combine(gitFolderPath, "hooks")
+let objectsPath         = Path.Combine(gitFolderPath, "objects")
+let refsPath            = Path.Combine(gitFolderPath, "refs")
+let configPath          = Path.Combine(gitFolderPath, "config")
 let studiesPath         = Path.Combine(inputPath, "studies")
 let assaysPath          = Path.Combine(inputPath, "assays")
 let runsPath            = Path.Combine(inputPath, "runs")
@@ -239,7 +269,10 @@ let workflowsPath       = Path.Combine(inputPath, "workflows")
 let investigationPath   = Path.Combine(inputPath, "isa.investigation.xlsx")
 
 let hasArcFolder            = Directory.Exists arcFolderPath
-let hasGitFolderStructure   = checkForGitFolderStructure gitFolderPath
+let hasGitFolder            = Directory.Exists gitFolderPath
+let hasHooksFolder          = Directory.Exists hooksPath
+let hasObjectsFolder        = Directory.Exists objectsPath
+let hasRefsFolder           = Directory.Exists refsPath
 let hasStudiesFolder        = Directory.Exists studiesPath
 let hasAssaysFolder         = Directory.Exists assaysPath
 let hasRunsFolder           = Directory.Exists runsPath
@@ -251,9 +284,12 @@ let studiesFolderStructure  =
 
 let filesystem =
     testList "Filesystem" [
-        testCase ".arc" <| fun () -> isPresent hasArcFolder (createMessage arcFolderPath "" "")
+        testCase ".arc" <| fun () -> isPresent hasArcFolder (createMessage arcFolderPath None None)
         testList ".git" [
-            testCase ""
+            testCase ".git folder"      <| fun () -> isPresent hasGitFolder     (createMessage gitFolderPath    None None)
+            testCase "hooks folder"     <| fun () -> isPresent hasHooksFolder   (createMessage hooksPath        None None)
+            testCase "objects folder"   <| fun () -> isPresent hasObjectsFolder (createMessage objectsPath      None None)
+            testCase "refs folder"      <| fun () -> isPresent hasRefsFolder    (createMessage refsPath         None None)
         ]
     ]
 
